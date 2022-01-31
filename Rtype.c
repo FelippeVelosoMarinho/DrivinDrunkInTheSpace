@@ -874,6 +874,7 @@ int main(int argc, char **argv){
 		
 		if (menuPlay){
 		  // Desenha o Menu Principal
+		  al_play_sample_instance(songInstance);
 		  al_draw_bitmap(menu, 0, 0, 0);
 		  al_draw_bitmap_region(botaoPlay, 144, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
 		  al_draw_bitmap_region(botaoOptions, 0, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
@@ -965,7 +966,7 @@ int main(int argc, char **argv){
 		if(jogoInicia = 1){
 			al_start_timer(timer2);
 			
-			al_play_sample_instance(songInstance);
+			//al_play_sample_instance(songInstance);
 			
 			desenhaCenario();
 			
