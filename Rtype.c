@@ -99,7 +99,7 @@ void initGlobais(){
 	
 	COR_CENARIO = al_map_rgb(rand()%64, rand()%64, rand()%64);
 	
-	char arquivo [] = {"Sound\\tema.ogg"};
+	char arquivo [] = {"./Sound/tema.ogg"};
 	ALLEGRO_SAMPLE *sfx = NULL;
 	sfx = al_load_sample(arquivo);
 
@@ -659,13 +659,6 @@ int main(int argc, char **argv){
 	ALLEGRO_SAMPLE_INSTANCE *songInstance = NULL;
 	
 	
-	//al_reserve_samples(10);
-
-	shot = al_load_sample("Sound\\Laser_Shootshot.ogg");
-	//boom = al_load_sample("boom.ogg");
-	song = al_load_sample("Sound\\tema.ogg");
-	
-   
 	//----------------------- rotinas de inicializacao ---------------------------------------
 	//inicializa o Allegro
 	if(!al_init()) {
@@ -777,24 +770,30 @@ int main(int argc, char **argv){
   float xBotaoOptions = SCREEN_W/2 - 90;
   float yBotaoOptions = SCREEN_H/2 + 170; 
 
-	image = al_load_bitmap("Img\\background2.png");
+	image = al_load_bitmap("./Img/background2.png");
 	if(!image) {
 		fprintf(stderr, "Falha ao criar o background!\n");
 		al_destroy_display(display);
 		al_destroy_timer(timer);
 		return -1;
 	 }
-	tutorial = al_load_bitmap("Img\\MenuOptions.png");
+	tutorial = al_load_bitmap("./Img/MenuOptions.png");
 	if(!tutorial) {
-		fprintf(stderr, "Falha ao criar o background!\n");
+		fprintf(stderr, "Falha ao criar a imagem de tutorial!\n");
 		al_destroy_display(display);
 		al_destroy_timer(timer);
 		return -1;
 	 }
-	if(!al_install_audio()){
-	   fprintf(stderr, "failed to initialize audio!\n");
-	   return -1;
-	}
+	
+	//incializa o audio
+	al_install_audio();
+
+	//incializa o decodificador de audio
+    al_init_acodec_addon();
+
+	shot = al_load_sample("./Sound/Laser_Shootshot.ogg");
+	song = al_load_sample("./Sound/tema.ogg");
+	
 	/*sample = al_load_sample("Sound\\tema.ogg");
 	if(!sample){
 		fprintf(stderr, "Falha ao carregar som\n");
@@ -802,7 +801,7 @@ int main(int argc, char **argv){
 	}*/
 	 
    
-	al_reserve_samples(10);
+	al_reserve_samples(40);
 	songInstance = al_create_sample_instance(song);
 	al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
 	
@@ -936,7 +935,6 @@ int main(int argc, char **argv){
 							case ALLEGRO_KEY_P:
 							foiP = 1;
 							noMenu = false;
-							printf("sumimasennanidesukainthisfuckingsheetainamoralzeee");
 							jogoInicia = 1; 
 							break;
 						  }
@@ -966,9 +964,8 @@ int main(int argc, char **argv){
 		
 		if(jogoInicia = 1){
 			al_start_timer(timer2);
-
+			
 			al_play_sample_instance(songInstance);
-			//al_play_sample(sample, 0.8, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL); 
 			
 			desenhaCenario();
 			
@@ -977,37 +974,43 @@ int main(int argc, char **argv){
 			desenhaBloco(bloco);
 			
 			atualizaNave(&nave);
+
 			mantemNaveNaTela(&nave);
 			
 			desenhaNave(nave);
 			
 			atualizaMeteoro(meteoro);
-
+			
 			desenhaMeteoro(meteoro);
+			
 			movimentaMeteoro(meteoro);
 			
 			atualizaTiro(tiros, NUM_TIROS);
+			
 			desenhaTiro(tiros, NUM_TIROS,ev.keyboard.keycode);	
-							
+			
 			int vra = (int)(al_get_timer_count(timer2)/FPS);
-
+			
 			
 			score(size_32, vra, &escore);
-				
+			
 			
 			//colissao(meteoro, nave, tiros, bloco);
 			colisaoMeteoroBloco(bloco, meteoro);
+			
 			colisaoMeteoroMeteoro(meteoro);
+			
 			colisaoTiroBloco(tiros,bloco);
+			
 			colisaoTiro(tiros, NUM_TIROS, meteoro, &escore);	
-
+			
 			if(vra == 60){
 				//printf("envis presnli");
 				chefe = 1;
 			}
-				
+			
 			if(colisaoMeteoro(meteoro,bloco,nave)==1){
-				printf("Falesceu!");
+				
 
 				char texto_fim_1[20];
 				char texto_fim_2[20];
