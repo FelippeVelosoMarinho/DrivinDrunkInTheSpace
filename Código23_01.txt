@@ -1,0 +1,972 @@
+#include <stdio.h>
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_image.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+
+const float FPS = 100;  
+
+int MULTIPLAYER = 0;
+
+const int SCREEN_W = 960;
+const int SCREEN_H = 540;
+
+const int NAVE_W = 100;
+//const int NAVE_H = 100;
+const int NAVE_H = 50;
+const int VELOCIDADE_NAVE = 3;
+
+const int NUM_TIROS = 1;
+const int NUM_METEORO = 20;
+
+ALLEGRO_COLOR COR_CENARIO;
+ALLEGRO_BITMAP *image =  NULL;
+//ALLEGRO_BITMAP *gabigol = NULL;
+
+typedef struct Point {
+	float x;
+	float y;
+} Point;
+
+typedef struct Nave {
+	int ID;
+	int x, y;
+	int vel;
+	int dir_x, dir_y;
+	int borda_x;
+	int borda_y;
+	int vida;
+	int score;
+	ALLEGRO_BITMAP *skin;
+
+	ALLEGRO_COLOR cor;
+} Nave;
+
+typedef struct Bloco {
+	int x, y;
+	int w, h;
+	ALLEGRO_BITMAP *gabigol;
+	ALLEGRO_COLOR cor;
+} Bloco;
+
+typedef struct Meteoro{
+	int x, y;
+	bool vida;
+	int vel;	
+	int size;
+	ALLEGRO_COLOR cor;
+} Meteoro;
+
+typedef struct Tiro{
+	int ID;
+	int x;
+	int y;
+	bool vida;
+	int size;
+	int speed;
+}Tiro;
+
+int random(int n){
+ return rand() %n;
+}
+
+int randInt(int min, int max) {
+    return min + random(max - min + 1);
+
+}
+
+
+//Inicia elementos do jogo
+void initGlobais(){
+	
+	COR_CENARIO = al_map_rgb(rand()%64, rand()%64, rand()%64);
+	
+	char arquivo [] = {"Sound\\tema.ogg"};
+	ALLEGRO_SAMPLE *sfx = NULL;
+	sfx = al_load_sample(arquivo);
+
+	if (!sfx){
+		printf( "SFX %s not loaded!\n",arquivo); 
+	} else{
+		//float vel = comprimento(ship->movimento);
+		//float vel_som = 1+(vel/(LIM_VELOCIDADE+randFloat(1) ))*4.0;
+		//float pos_som = 2*((ship->center.x/SCREEN_W)-0.5);
+		al_play_sample(sfx, 0.5, 1 ,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+	}
+	
+}
+
+void initBloco(Bloco *bloco){
+	
+	bloco->x = SCREEN_W + rand()%(SCREEN_W);
+	bloco->y = rand()%(4*SCREEN_H/5);
+	bloco->w = SCREEN_W + rand()%(SCREEN_W); 
+	bloco->h = SCREEN_H/5 + rand()%(2*SCREEN_H/5); 
+	bloco->cor = al_map_rgb(rand(), rand(), rand());
+	bloco->gabigol = al_load_bitmap("Img\\gaigol.jpg");
+	
+}
+
+void initNave(Nave *nave){
+	
+	nave->x = 10 + NAVE_W;
+	nave->y = SCREEN_H/2;
+	nave->dir_x = 0;
+	nave->dir_y = 0;
+	//nave->borda_x = (10 + NAVE_W)/2; 
+	//nave->borda_y = (SCREEN_H/2)/2;	
+	nave->cor = al_map_rgb(192+rand()%64, 192+rand()%64, 192+rand()%64);
+	nave->skin = al_load_bitmap("Img\\starShip.png");
+	nave->vel = VELOCIDADE_NAVE;
+	//nave->vida = 2;
+}
+
+void initMeteoro(Meteoro meteoro[]){
+	for(int i = 0; i < NUM_METEORO; i++){
+		meteoro[i].cor = al_map_rgb(rand(), rand(), rand());
+		meteoro[i].vida = false;
+		meteoro[i].vel = randInt(1,5);//192+rand()%64
+		meteoro[i].size = randInt(15,60);
+	}
+}
+
+void initTiro(Tiro tiro[], int tamanho,Nave nave){
+	for(int i = 0; i < tamanho; i++)
+	{
+		//tiro[i].ID = TIRO;
+		tiro[i].x = nave.x + NAVE_W;
+		tiro[i].y = nave.y + NAVE_H/2;
+		tiro[i].speed = 10;
+		tiro[i].size = 4;
+		tiro[i].vida = false;
+	}
+}
+
+
+//Desenha elementos do Jogo
+void desenhaCenario() {//int x
+	//al_clear_to_color(COR_CENARIO);
+	al_draw_bitmap(image, 0, 0, 0);
+}
+
+void desenhaNave(Nave nave, ALLEGRO_BITMAP *skinNave) {
+	//al_draw_bitmap(skinNave, 0, 0, 0);
+	//al_draw_filled_rectangle(nave.x-NAVE_W/2, nave.y - 14, nave.x - 25, nave.y - 7, al_map_rgb(255, 255, 255));
+	//al_draw_filled_rectangle(nave.x-NAVE_W/2, nave.y + 14, nave.x - 25, nave.y + 7, al_map_rgb(255, 255, 255));
+	//al_draw_filled_triangle(nave.x, nave.y, nave.x - NAVE_W, nave.y - NAVE_H/2, nave.x - NAVE_W, nave.y + NAVE_H/2, nave.cor);
+	al_draw_bitmap(nave.skin, nave.x - NAVE_W, nave.y- NAVE_H/2, 0);
+}
+
+void desenhaBloco(Bloco bloco){
+	//al_draw_bitmap_region(bloco.gabigol,bloco.x, bloco.y, bloco.x + bloco.w, bloco.y + bloco.h, bloco.x, bloco.y, 0);
+	al_draw_filled_rectangle(bloco.x, bloco.y, bloco.x + bloco.w, bloco.y + bloco.h, bloco.cor);
+	
+}
+
+void desenhaMeteoro(Meteoro meteoro[]){
+	for(int i = 0; i < NUM_METEORO; i++){
+		if(meteoro[i].vida)
+		{
+			al_draw_filled_circle(meteoro[i].x, meteoro[i].y, meteoro[i].size, meteoro[i].cor);//20
+		}
+	}
+}
+
+void desenhaTiro(Tiro tiro[], int tamanho, int tecla){
+	//int aux = 4;
+		switch(tecla) {
+		case ALLEGRO_KEY_DOWN:
+			//while(){
+				//aux++;
+			//}		
+			break;
+		}	
+		
+	for( int i = 0; i < tamanho; i++){
+		if(tiro[i].vida)
+			al_draw_filled_circle(tiro[i].x, tiro[i].y, tiro[i].size, al_map_rgb(255, 255, 255));
+	}
+}
+
+
+
+//Atualiza os valores das variáveis declaradas no struct 
+void atualizaNave(Nave *n){
+	
+	n->y += n->dir_y * n->vel;
+	n->x += n->dir_x * n->vel;
+	
+}
+
+void atualizaTiro(Tiro tiro[], int tamanho){
+	for(int i = 0; i < tamanho; i++){
+		if(tiro[i].vida){
+			tiro[i].x += tiro[i].speed;
+			if(tiro[i].x > SCREEN_W)
+				tiro[i].vida = false;
+		}
+	}
+}
+void atualizaMeteoro(Meteoro meteoro[]){
+	for(int i = 0; i < NUM_METEORO; i++){
+		if(meteoro[i].vida){
+			meteoro[i].x -= meteoro[i].vel;
+
+			if(meteoro[i].x+meteoro[i].size < 0 && meteoro[i].y<0 && meteoro[i].y<SCREEN_H)
+				meteoro[i].vida = false;
+		}
+	}
+}
+int atualizaCenario(int cont){
+	int x;
+	
+	//x -= 100;
+	cont = cont *(-50);
+	x=cont;
+	//Se background sair da tela volta x=0
+	if(x>SCREEN_W)
+		//cont =0;
+		x=0;
+	
+	return x;
+}
+
+void atualizaBloco(Bloco *bloco){
+	//int vel = 0;
+	bloco->x -= 1;
+	
+	if(bloco->x + bloco->w < 0){
+		initBloco(bloco);
+	}
+	
+}
+
+
+//Funções de movimento Tiro e Inimigo
+void movimentaMeteoro(Meteoro meteoro[]){
+	for(int i = 0; i < NUM_METEORO; i++)
+	{
+		if(!meteoro[i].vida)
+		{
+			if(rand() % 500 == 0)
+			{
+				meteoro[i].vida = true;
+				meteoro[i].x = SCREEN_W;
+				meteoro[i].y = 30 + rand() % (SCREEN_H - 60);
+
+				break;
+			}
+		}
+	}
+}
+
+void atira(Tiro tiro[], int tamanho ,Nave nave, float tiro_duracao, bool tiro_avancado_duracao, int tecla, float inicio_tiro, bool segurando_tecla){
+        switch(tecla) {
+			//se a tecla for o espaço
+			case ALLEGRO_KEY_SPACE:
+                inicio_tiro = al_get_time ();
+                segurando_tecla = true;
+			break;
+
+		}
+	for(int i = 0; i < tamanho; i++){
+		if(tiro_duracao<tiro_avancado_duracao){
+			tiro[i].vida = true;
+			tiro[i].size++;
+		}
+		if(!tiro[i].vida){
+			tiro[i].x = nave.x;
+			tiro[i].y = nave.y;
+			tiro[i].vida = true;
+			//tocarSom("Laser_Shoot.ogg");
+			char arquivo [] = {"Sound\\Laser_Shoot.ogg"};
+			ALLEGRO_SAMPLE *sfx = NULL;
+			sfx = al_load_sample(arquivo);
+			
+			al_play_sample(sfx, 0.5, 1 ,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+
+			/*if (!sfx){
+				printf( "SFX %s not loaded!\n",arquivo); 
+			} else{
+				//float vel = comprimento(ship->movimento);
+				//float vel_som = 1+(vel/(LIM_VELOCIDADE+randFloat(1) ))*4.0;
+				//float pos_som = 2*((ship->center.x/SCREEN_W)-0.5);
+				al_play_sample(sfx, 0.5, 1 ,1,ALLEGRO_PLAYMODE_ONCE,NULL);
+			}*/
+			
+			break;
+		}
+	}
+}
+
+//função que prende a nave na tela
+void mantemNaveNaTela(Nave *nave){
+	if(nave->x > SCREEN_W){
+		nave->x = SCREEN_W;
+		//printf("Lado 1");	
+	}
+	if(nave->x-NAVE_W<0){
+		nave->x = 0+NAVE_W;
+		//printf("Lado 2");
+	}
+	if(nave->y+(NAVE_H/2)>SCREEN_H){
+		nave->y = SCREEN_H-(NAVE_H/2);
+		//- nave->borda_y
+		//printf("Lado 3");
+	}
+	if(nave->y-(NAVE_H/2)<0){
+		nave->y = 0+(NAVE_H/2);
+		//nave->y = SCREEN_H + nave->borda_y;
+		//printf("Lado 4");
+	}	
+}
+
+
+ //Colisoes 
+ 
+ int colisaoNaveBloco(Nave nave, Bloco bloco){
+	// == <
+	if(nave.x  > bloco.x && nave.x - NAVE_W < bloco.x + bloco.w && nave.y + (NAVE_H/2) > bloco.y && nave.y - (NAVE_H/2) < bloco.y + bloco.h){
+		return 1;//+ NAVE_W
+	}
+	else	
+	
+	return 0;
+}
+
+
+
+int colisaoTiroBloco(Tiro tiro[], Bloco bloco){
+	for(int i = 0; i < NUM_TIROS; i++){
+		if(tiro[i].x  > bloco.x && tiro[i].x-4 < bloco.x + bloco.w && tiro[i].y+4 > bloco.y && tiro[i].y-4 < bloco.y + bloco.h){	
+			tiro[i].vida = false;
+			//printf("tiro %d", tiro[i].vida);
+			return 1;
+		}
+	else	
+	
+	return 0;		
+	}
+
+
+}
+float dist(int x1,int x2, int y1, int y2){
+	if(y1<0){
+		y1 *= -1;
+	}
+	return sqrt(pow(x1 - x2,2) + pow(y1 - y2,2));
+}
+float dist2(int x1,int x2, int y1, int y2){
+	if(y1<0){
+		y1 *= -1;
+	}
+	return sqrt(pow(x1 - x2,2) + pow(y1 - y2,2));
+}
+void colisaoMeteoroBloco(Bloco bloco, Meteoro meteoro[]){
+	
+	for(int i = 0; i < NUM_METEORO; i++){
+			/*if(bloco.x >= meteoro[i].x &&bloco.x - bloco.w <= meteoro[i].x+ meteoro[i].size&& bloco.y - bloco.h <= meteoro[i].y - meteoro[i].size && 
+				bloco.y + bloco.h >= meteoro[i].y-meteoro[i].size){
+				meteoro[i].vida = false;
+				//printf("meteoro: %d ", meteoro[i].vida);
+		}*/
+		if(meteoro[i].x  > bloco.x && meteoro[i].x - meteoro[i].size < bloco.x + bloco.w && meteoro[i].y + meteoro[i].size > bloco.y && meteoro[i].y - meteoro[i].size < bloco.y + bloco.h){
+			meteoro[i].vida = false;
+			//printf("meteoro: %d ", meteoro[i].vida);
+		}
+		//regioes 1 e 2
+		/*if(meteoro[i].x >= bloco.x && meteoro[i].x <= bloco.w){
+			if(meteoro[i].y + meteoro[i].size >= bloco.y && meteoro[i].y - meteoro[i].size <= bloco.h){
+				meteoro[i].vida = false;
+			}
+		}
+		
+		//regioes 3 e 4
+		if(dist2(meteoro[i].x, meteoro[i].y, bloco.x, bloco.y) <= meteoro[i].size || dist2(meteoro[i].x, meteoro[i].y, bloco.w, bloco.h) <= meteoro[i].size ||
+		dist(meteoro[i].x, meteoro[i].y, bloco.x, bloco.y) ){
+			meteoro[i].vida = false;
+		}*/
+	}			
+			
+}
+
+int colisaoTiro(Tiro tiro[], int tTam, Meteoro meteoro[]){
+	int score = 0;
+	
+	for(int i = 0; i < tTam; i++){
+		//printf("score: %d ", meteoro[i].size*2);
+		score = score + (meteoro[i].size*2);
+		if(tiro[i].vida){
+			//printf("score: %d ", meteoro[i].size*2);
+			for(int j =0; j < NUM_METEORO; j++){
+				if(meteoro[j].vida){
+					//printf("score: %d ", meteoro[j].size*2);
+					if(tiro[i].x > (meteoro[j].x - meteoro[j].size) &&
+						tiro[i].x < (meteoro[j].x + meteoro[j].size) &&
+						tiro[i].y > (meteoro[j].y - meteoro[j].size) &&
+						tiro[i].y < (meteoro[j].y + meteoro[j].size)){
+						tiro[i].vida = false;
+						meteoro[j].vida = false;
+						
+						if(meteoro[j].vida = false){
+							
+							printf("scorecoree: %d ", meteoro[j].size*2);
+							return score;							
+						}
+
+					}
+				}
+			}
+		}
+	}
+}
+
+void colisaoMeteoroMeteoro(Meteoro meteoro[]){
+	for(int i = 0; i < NUM_METEORO; i++){
+		if(meteoro[i].vida&& meteoro[i].x>SCREEN_W){
+			for(int j =0; j < NUM_METEORO; j++){
+				if(meteoro[j].vida&& meteoro[j].x>SCREEN_W){
+					if(meteoro[i].x > (meteoro[j].x - meteoro[j].size) &&
+						meteoro[i].x < (meteoro[j].x + meteoro[j].size) &&
+						meteoro[i].y > (meteoro[j].y - meteoro[j].size) &&
+						meteoro[i].y < (meteoro[j].y + meteoro[j].size)){					
+							meteoro[i].vida = false;
+							meteoro[j].vida = false;
+					}
+				}
+			}
+		}
+	}
+}
+/*if(nave.x >= meteoro[i].x && nave.x - NAVE_W <= meteoro[i].x + meteoro[i].size && 
+				nave.y + (NAVE_H/2) >= meteoro[i].y-meteoro[i].size && nave.y - (NAVE_H/2) <= meteoro[i].y + meteoro[i].size&&
+				meteoro[i].x+meteoro[i].size>=nave.x&&meteoro[i].x<=nave.x+NAVE_W&&meteoro[i].y+meteoro[i].size>=nave.y&&meteoro[i].y<=nave.y+NAVE_H){*/
+/*
+int colisaoMeteoro(Meteoro meteoro[], Nave nave){
+	for(int i = 0; i < NUM_METEORO; i++){//meteoro[i].size
+		if(meteoro[i].vida){
+			/*if(nave.x >= meteoro[i].x && nave.x - NAVE_W <= meteoro[i].x + meteoro[i].size&&
+			nave.y + (NAVE_H/2) >= meteoro[i].y-meteoro[i].size && nave.y - (NAVE_H/2) <= meteoro[i].y + meteoro[i].size ||
+			nave.x+SCREEN_W <= meteoro[i].x && nave.x - NAVE_W >= meteoro[i].x + meteoro[i].size&&
+			nave.y + (NAVE_H/2) <= meteoro[i].y-meteoro[i].size && nave.y - (NAVE_H/2) >= meteoro[i].y + meteoro[i].size){	
+				//nave.vida--;
+				meteoro[i].vida = false;
+				return 1;
+			}
+
+		}
+	}
+}*/
+int colisaoMeteoro(Meteoro meteoro[], Bloco bloco, Nave nave){
+	for(int i = 0; i <NUM_METEORO; i++){
+		if(meteoro[i].vida){
+			if(meteoro[i].x + meteoro[i].size >= nave.x- NAVE_W && meteoro[i].x <= nave.x){
+				if(meteoro[i].y + meteoro[i].size >= nave.y - NAVE_H/2 && meteoro[i].y - meteoro[i].size <= nave.y + NAVE_H/2){
+					//se a nave colidiu com um meteoro, atualiza o valor do jogo
+					return 1;
+				}
+			}			 
+		}
+	}
+	/*			if(meteoro[i].x + meteoro[i].size >= nave.x && meteoro[i].x <= nave.x + NAVE_W){
+				if(meteoro[i].y + meteoro[i].size >= nave.y && meteoro[i].y <= nave.y + NAVE_H){
+					//se a nave colidiu com um meteoro, atualiza o valor do jogo
+					return 1;
+				}
+			}*/
+
+	//verifica se a nave colidiu com algum bloco  nave.x - NAVE_W, nave.y- NAVE_H/2
+	if(nave.x- NAVE_W < bloco.x + bloco.w && nave.x > bloco.x && nave.y - NAVE_H/2 < bloco.y + bloco.h && nave.y + NAVE_H > bloco.y){
+		//se a nave colidiu com um bloco, atualiza o valor do jogo
+		return 1;
+	}
+	/*	if(nave.x < bloco.x + bloco.w && nave.x + NAVE_W > bloco.x && nave.y < bloco.y + bloco.h && nave.y + NAVE_H > bloco.y){
+		//se a nave colidiu com um bloco, atualiza o valor do jogo
+		return 1;
+	}*/
+}
+
+//Score e recorde
+int pontos(Meteoro meteoro[]){
+	int score = 0;
+	
+	for(int i = 0; i < NUM_METEORO; i++){
+		if(meteoro[i].vida = false){
+			score = score + (meteoro[i].size*2);				
+			//printf("score: %d ", meteoro[i].size*2);
+			return score;							
+		}
+	}
+	
+	return score;
+}
+void score(ALLEGRO_FONT *size_32){
+	int score = 0;
+	Tiro tiro[1];
+	Meteoro meteoro[NUM_METEORO];
+	score = pontos(meteoro);
+	//Meteoro meteoro[NUM_METEORO];
+	//score = colisaoTiro(tiro, NUM_TIROS, meteoro, NUM_METEORO);
+	al_draw_textf(size_32,al_map_rgb(255,255,255),0,0,0,"SCORE %d", score);
+	//printf(" score: %d ",pontos(meteoro));
+}
+
+void tiro2(Tiro tiro[],int tecla){
+
+	
+	for(int i = 0; i < NUM_METEORO; i++){
+		if(tiro[i].vida){
+			switch(tecla) {
+				case ALLEGRO_KEY_SPACE:
+					//inicio_tiro = al_get_time ();
+					//segurando_tecla = true;	
+					break;
+				}
+			//while(){
+				tiro[i].vida = true;
+			//}
+			
+		}
+	}	
+}
+ 
+int main(int argc, char **argv){
+	
+	srand(time(NULL));
+	
+	ALLEGRO_DISPLAY *display = NULL;
+	ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+	ALLEGRO_TIMER *timer = NULL;
+	
+	ALLEGRO_SAMPLE *sample=NULL;
+	
+	//MENU
+	ALLEGRO_BITMAP *menu = NULL;
+	ALLEGRO_BITMAP *tutorial = NULL;
+	ALLEGRO_BITMAP *botaoPlay = NULL;
+	ALLEGRO_BITMAP *botaoOptions = NULL;	
+	ALLEGRO_BITMAP *skinNave = NULL;
+	
+	ALLEGRO_BITMAP *bgImage = NULL;
+	ALLEGRO_BITMAP *mgImage = NULL;
+	ALLEGRO_BITMAP *fgImage = NULL;
+	
+   
+	//----------------------- rotinas de inicializacao ---------------------------------------
+	//inicializa o Allegro
+	if(!al_init()) {
+		fprintf(stderr, "failed to initialize allegro!\n");
+		return -1;
+	}
+	
+    //inicializa o módulo de primitivas do Allegro
+    if(!al_init_primitives_addon()){
+		fprintf(stderr, "failed to initialize primitives!\n");
+        return -1;
+    }	
+	
+	//inicializa o modulo que permite carregar imagens no jogo
+	if(!al_init_image_addon()){
+		fprintf(stderr, "failed to initialize image module!\n");
+		return -1;
+	}
+   
+	//cria um temporizador que incrementa uma unidade a cada 1.0/FPS segundos
+    timer = al_create_timer(1.0 / FPS);
+    if(!timer) {
+		fprintf(stderr, "failed to create timer!\n");
+		return -1;
+	}
+ 
+	//cria uma tela com dimensoes de SCREEN_W, SCREEN_H pixels
+	display = al_create_display(SCREEN_W, SCREEN_H);
+	if(!display) {
+		fprintf(stderr, "failed to create display!\n");
+		al_destroy_timer(timer);
+		return -1;
+	}
+
+	//instala o teclado
+	if(!al_install_keyboard()) {
+		fprintf(stderr, "failed to install keyboard!\n");
+		return -1;
+	}
+
+	//inicializa o modulo allegro que carrega as fontes
+	al_init_font_addon();
+
+	//inicializa o modulo allegro que entende arquivos tff de fontes
+	if(!al_init_ttf_addon()) {
+		fprintf(stderr, "failed to load tff font module!\n");
+		return -1;
+	}
+	
+	//carrega o arquivo arial.ttf da fonte Arial e define que sera usado o tamanho 32 (segundo parametro)
+    /*ALLEGRO_FONT *size_32 = al_load_font("arial.ttf", 32, 1);   
+	if(size_32 == NULL) {
+		fprintf(stderr, "font file does not exist or cannot be accessed!\n");
+	}*/
+    ALLEGRO_FONT *size_32 = al_load_font("8-BIT WONDER.ttf", 32, 1);   
+	if(size_32 == NULL) {
+		fprintf(stderr, "font file does not exist or cannot be accessed!\n");
+	}	
+
+ 	//cria a fila de eventos
+	event_queue = al_create_event_queue();
+	if(!event_queue) {
+		fprintf(stderr, "failed to create event_queue!\n");
+		al_destroy_display(display);
+		return -1;
+	}
+	/*gabigol = al_load_bitmap("Img\\gaigol.png");
+	if(!gabigol) {
+		fprintf(stderr, "Falha ao criar o gabigol!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	}	*/
+	
+	menu = al_load_bitmap("Img\\MenuTela.png");
+	if(!menu) {
+		fprintf(stderr, "Falha ao criar o menu bitmap!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	}	
+	
+	bgImage = al_load_bitmap("starBG.png");
+	if(!bgImage) {
+		fprintf(stderr, "Falha ao criar o bg image bitmap!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	}	
+	mgImage = al_load_bitmap("starMG.png");
+	if(!mgImage) {
+		fprintf(stderr, "Falha ao criar o mg Image bitmap!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	}	
+	
+	fgImage = al_load_bitmap("starFG.png");
+	if(!fgImage) {
+		fprintf(stderr, "Falha ao criar o mfg image bitmap!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	}		
+	
+    // Botão Play
+  botaoPlay = al_load_bitmap("Img\\botaoPlay.png");
+  if(!botaoPlay) {
+    fprintf(stderr, "Falha ao criar o botao larguraBotaoPlay bitmap!\n");
+    al_destroy_display(display);
+    al_destroy_timer(timer);
+    return -1;
+  }
+
+  float xBotaoPlay = SCREEN_W/2 - 90;
+  float yBotaoPlay = SCREEN_H/2 + 100 ;
+
+  // Botão Options
+  botaoOptions = al_load_bitmap("Img\\botaoOptions.png");
+  if(!botaoOptions) {
+    fprintf(stderr, "Falha ao criar o botao Continue bitmap!\n");
+    al_destroy_display(display);
+    al_destroy_timer(timer);
+    return -1;
+  }	
+  float xBotaoOptions = SCREEN_W/2 - 90;
+  float yBotaoOptions = SCREEN_H/2 + 170; 
+
+	image = al_load_bitmap("Img\\background2.png");
+	if(!image) {
+		fprintf(stderr, "Falha ao criar o background!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	 }
+	tutorial = al_load_bitmap("Img\\tutorial.png");
+	if(!image) {
+		fprintf(stderr, "Falha ao criar o background!\n");
+		al_destroy_display(display);
+		al_destroy_timer(timer);
+		return -1;
+	 }
+   
+	/*al_reserve_samples(30);
+	/* Loop the sample until the display closes. */
+	//al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);   
+
+
+	//registra na fila os eventos de tela (ex: clicar no X na janela)
+	al_register_event_source(event_queue, al_get_display_event_source(display));
+	//registra na fila os eventos de tempo: quando o tempo altera de t para t+1
+	al_register_event_source(event_queue, al_get_timer_event_source(timer));
+	//registra na fila os eventos de teclado (ex: pressionar uma tecla)
+	al_register_event_source(event_queue, al_get_keyboard_event_source()); 	
+
+	initGlobais();
+	
+	Nave nave;
+	initNave(&nave);
+	
+	Tiro tiros[5];
+	initTiro(tiros, NUM_TIROS, nave);
+	
+	Meteoro meteoro[NUM_METEORO];
+	initMeteoro(meteoro);
+	
+	Bloco bloco;
+	initBloco(&bloco);
+
+	//inicia o temporizador
+	al_start_timer(timer);
+	
+	
+	bool done = false;
+	bool render = false;
+	
+	int playing = 1;
+	bool menuPlay = true;
+	int jogoInicia = 0;	
+	bool noMenu = true;
+	bool naOpcao = false;
+	bool continuar = false; 
+	
+	bool segurando_tecla = false;
+	float tiro_avancado_duracao = 1.00;
+	float inicio_tiro = 0;	
+
+	//bool introducao = true;
+	//bool naIntro = true;
+	while(playing) {
+		ALLEGRO_EVENT ev;
+		//espera por um evento e o armazena na variavel de evento ev
+		al_wait_for_event(event_queue, &ev);
+
+		//se o tipo de evento for um evento do temporizador, ou seja, se o tempo passou de t para t+1
+		if(ev.type == ALLEGRO_EVENT_TIMER) {
+			
+		// -------- Menu --------------
+		
+		if (menuPlay){
+		  // Desenha o Menu Principal
+		  al_draw_bitmap(menu, 0, 0, 0);
+		  al_draw_bitmap_region(botaoPlay, 144, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
+		  al_draw_bitmap_region(botaoOptions, 0, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
+
+		  menuPlay = false;
+		  
+		  
+		  while(noMenu){
+			//tocarSom("tema.ogg");
+			//introducao = false;  
+			ALLEGRO_EVENT ev;
+			al_wait_for_event(event_queue, &ev);
+			int foiO = 0;
+
+			if(ev.type == ALLEGRO_EVENT_KEY_DOWN) { 
+
+			  switch(ev.keyboard.keycode) {
+
+				case(ALLEGRO_KEY_UP):
+				  al_draw_bitmap_region(botaoPlay, 144, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0); //Muda os sprites dos bõtões para que estes simulem estar sendo pressionados
+				  al_draw_bitmap_region(botaoOptions, 0, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
+				  continuar = true;
+				  break;
+
+				  case(ALLEGRO_KEY_DOWN):
+				  al_draw_bitmap_region(botaoPlay, 0, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
+				  al_draw_bitmap_region(botaoOptions, 144, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
+				  continuar = false;
+				  break;
+				
+				case( ALLEGRO_KEY_W):
+				  al_draw_bitmap_region(botaoPlay, 144, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0); //Muda os sprites dos bõtões para que estes simulem estar sendo pressionados
+				  al_draw_bitmap_region(botaoOptions, 0, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
+				  continuar = true;
+				  break;
+
+				  case(ALLEGRO_KEY_S):
+				  al_draw_bitmap_region(botaoPlay, 0, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
+				  al_draw_bitmap_region(botaoOptions, 144, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
+				  continuar = false;
+				  break;				  
+				  
+				  case(ALLEGRO_KEY_ENTER):					  
+				  if(!continuar){//!continuar
+					  while(!foiO){
+						al_draw_bitmap(tutorial, 0, 0, 0);
+						//intruducao(size_32);
+						al_flip_display();
+
+						ALLEGRO_EVENT ev;
+						al_wait_for_event(event_queue, &ev);	
+						if(ev.type == ALLEGRO_EVENT_KEY_DOWN) { 
+						  switch(ev.keyboard.keycode) { 
+
+							case ALLEGRO_KEY_O:
+							foiO = 1;
+							noMenu = false;
+							jogoInicia = true; 
+							break;
+						  }
+						}
+					  }
+					}else{	
+					noMenu = false;
+					playing=0;
+					//jogoInicia = 1;
+                }
+				  break;
+				} 
+			  }	  
+
+			  al_flip_display();
+
+			  if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) { //Verifica se o botão "X" da janela foi pressionado e fecha o jogo
+				playing = 0;
+				break;
+			  }
+			}
+		}
+		
+		//Jogo rodando
+		
+		if(jogoInicia = 1){
+			
+			desenhaCenario();
+			
+			atualizaBloco(&bloco);
+			
+			desenhaBloco(bloco);
+			
+			atualizaNave(&nave);
+			mantemNaveNaTela(&nave);
+			
+			desenhaNave(nave,skinNave);
+			
+			atualizaMeteoro(meteoro);
+
+			desenhaMeteoro(meteoro);
+			movimentaMeteoro(meteoro);
+			
+			atualizaTiro(tiros, NUM_TIROS);
+			desenhaTiro(tiros, NUM_TIROS,ev.keyboard.keycode);
+			//tiro2(tiros,ev.keyboard.keycode);
+			
+			score(size_32);
+			
+			//colissao(meteoro, nave, tiros, bloco);
+			colisaoMeteoroBloco(bloco, meteoro);
+			colisaoMeteoroMeteoro(meteoro);
+			colisaoTiroBloco(tiros,bloco);
+			colisaoTiro(tiros, NUM_TIROS, meteoro);			
+			
+			if(colisaoMeteoro(meteoro,bloco,nave)==1){
+				printf("Falesceu!");
+				//nave.vida--;
+				playing=0;
+				//if(nave.vida=0){
+					//playing = 0;
+				//}
+			}				
+			/*if(colisaoNaveBloco(nave, bloco)==1){
+				printf("Falesceu!");
+				//nave.vida--;
+				playing=0;
+				//if(nave.vida=0){
+					//playing = 0;
+				//}
+			}	*/
+		}			
+			
+			//atualiza a tela (quando houver algo para mostrar)
+			al_flip_display();
+			
+			if(al_get_timer_count(timer)%(int)FPS == 0)
+				printf("\n%d segundos se passaram...", (int)(al_get_timer_count(timer)/FPS));
+		}
+		//se o tipo de evento for o fechamento da tela (clique no x da janela)
+		else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			playing = 0;
+		}
+		//se o tipo de evento for um pressionar de uma tecla
+		else if(ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+			
+			switch(ev.keyboard.keycode) {
+				
+				case ALLEGRO_KEY_W:
+					//if(nave.dir_y + 1 >= 0)
+						nave.dir_y--;
+				break;	
+				case ALLEGRO_KEY_S:
+					//if(nave.dir_y + 1 + nave.y <= SCREEN_H)
+						nave.dir_y++;
+				break;	
+				case ALLEGRO_KEY_A:
+				//if(nave.dir_x - 1 >= 0)
+					nave.dir_x--;
+				break;	
+				case ALLEGRO_KEY_D:
+					//if(nave.dir_x + 1 + nave.x <= SCREEN_W)
+						nave.dir_x++;
+				break;	
+				case ALLEGRO_KEY_SPACE:
+					//tocarSom("Laser_Shoot.ogg");
+					atira(tiros, NUM_TIROS, nave, inicio_tiro, segurando_tecla,ev.keyboard.keycode, segurando_tecla, tiro_avancado_duracao);
+						inicio_tiro = al_get_time ();
+						segurando_tecla = true;						
+					
+				break;				
+			}
+			
+			//imprime qual tecla foi
+			//printf("\ncodigo tecla: %d", ev.keyboard.keycode);
+		}
+		else if(ev.type == ALLEGRO_EVENT_KEY_UP) {
+			
+			switch(ev.keyboard.keycode) {
+				
+				case ALLEGRO_KEY_W:
+					nave.dir_y++;
+				break;	
+				case ALLEGRO_KEY_S:
+					nave.dir_y--;
+				break;	
+				case ALLEGRO_KEY_A:
+					nave.dir_x++;
+				break;	
+				case ALLEGRO_KEY_D:
+					nave.dir_x--;
+				break;				
+			}
+		}
+
+	} //fim do while
+	
+     
+	//procedimentos de fim de jogo (fecha a tela, limpa a memoria, etc)
+	al_destroy_bitmap(tutorial);
+	al_destroy_bitmap(bgImage);
+	al_destroy_bitmap(mgImage);
+	al_destroy_bitmap(fgImage);
+	al_destroy_bitmap(image);
+	al_destroy_bitmap(menu);
+	al_destroy_bitmap(botaoPlay );
+	al_destroy_bitmap(botaoOptions);
+	al_destroy_timer(timer);
+	al_destroy_display(display);
+	al_destroy_event_queue(event_queue);
+   
+ 
+	return 0;
+}
