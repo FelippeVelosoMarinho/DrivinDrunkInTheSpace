@@ -25,6 +25,10 @@ const int NUM_METEORO = 6;
 
 ALLEGRO_COLOR COR_CENARIO;
 ALLEGRO_BITMAP *image =  NULL;
+ALLEGRO_SAMPLE *shot = NULL;
+ALLEGRO_SAMPLE *morte = NULL;
+ALLEGRO_SAMPLE *boom = NULL;
+
 //ALLEGRO_BITMAP *gabigol = NULL;
 
 typedef struct Nave {
@@ -98,16 +102,6 @@ int randInt(int min, int max) {
 void initGlobais(){
 	
 	COR_CENARIO = al_map_rgb(rand()%64, rand()%64, rand()%64);
-	
-	char arquivo [] = {"./Sound/tema.ogg"};
-	ALLEGRO_SAMPLE *sfx = NULL;
-	sfx = al_load_sample(arquivo);
-
-	if (!sfx){
-		printf( "SFX %s not loaded!\n",arquivo); 
-	} else{
-		al_play_sample(sfx, 0.5, 1 ,1,ALLEGRO_PLAYMODE_ONCE,NULL);
-	}
 	
 }
 
@@ -265,13 +259,10 @@ void atira(Tiro tiro[], int tamanho ,Nave nave, float tiro_duracao, bool tiro_av
 			tiro[i].x = nave.x;
 			tiro[i].y = nave.y;
 			tiro[i].vida = true;
-			//tocarSom("Laser_Shoot.ogg");
-			char arquivo [] = {"Sound\\Laser_Shoot.ogg"};
-			ALLEGRO_SAMPLE *sfx = NULL;
-			sfx = al_load_sample(arquivo);
-			//al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
-			al_play_sample(sfx, 0.5, 1 ,1,ALLEGRO_PLAYMODE_ONCE,NULL);
-			
+		
+			shot = al_load_sample("Sound\\Laser_Shoot.ogg");
+			al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
+
 			break;
 		}
 	}
@@ -330,6 +321,8 @@ void colisaoTiro(Tiro tiro[], int tTam, Meteoro meteoro[], int *escore){
 						tiro[i].x-tiro[i].size < (meteoro[j].x + meteoro[j].size) &&
 						tiro[i].y+tiro[i].size > (meteoro[j].y - meteoro[j].size) &&
 						tiro[i].y-tiro[i].size < (meteoro[j].y + meteoro[j].size)){
+						boom = al_load_sample("Sound\\Explosion.ogg");
+						al_play_sample(boom, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);	
 						if(tiro[i].size<16){
 							tiro[i].vida = false;
 						}	
@@ -383,6 +376,7 @@ void colisaoMeteoroMeteoro(Meteoro meteoro[]){
 
 
 int colisaoMeteoro(Meteoro meteoro[], Bloco bloco, Nave nave){
+	
 	for(int i = 0; i <NUM_METEORO; i++){
 		if(meteoro[i].vida){
 			if(meteoro[i].x + meteoro[i].size >= nave.x- NAVE_W && meteoro[i].x-meteoro[i].size <= nave.x){
@@ -391,6 +385,8 @@ int colisaoMeteoro(Meteoro meteoro[], Bloco bloco, Nave nave){
 					printf("colisao nave meteoro");
 					nave.vida--;
 					printf(" VIDA: %d ",nave.vida);
+					morte = al_load_sample("Sound\\morte.ogg");
+					al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 					if(nave.vida == 0){
 						return 1;
 					}
@@ -402,6 +398,8 @@ int colisaoMeteoro(Meteoro meteoro[], Bloco bloco, Nave nave){
 	if(nave.x  > bloco.x && nave.x - NAVE_W < bloco.x + bloco.w && nave.y + (NAVE_H/2) > bloco.y && nave.y - (NAVE_H/2) < bloco.y + bloco.h){
 		printf("colisao nave bloco");
 		nave.vida--;
+		morte = al_load_sample("Sound\\morte.ogg");
+		al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 		//printf(" VIDA: %d ",nave.vida);
 		if(nave.vida == 0){
 			return 1;
@@ -523,6 +521,8 @@ int colisaoChefao(Chefao chefao, Nave nave, Tiro tiro[],int *vidaChefe){
 int chefaoVida(Chefao chefao, int *vidaChefe, int tempo, int *escore){
 	
 	if(*vidaChefe <= 0){
+		boom = al_load_sample("Sound\\Explosion.ogg");
+		al_play_sample(boom, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 		chefao.vida = false;
 		return 1;
 	}
@@ -587,6 +587,8 @@ int colisaoTiroC(TiroC tiroc[], Nave nave, Bloco bloco){
 					//se a nave colidiu com um meteoro, atualiza o valor do jogo
 					printf("colisao nave tirozao");
 					nave.vida--;
+					
+					morte = al_load_sample("//Sound/morte.ogg");
 					//printf(" VIDA: %d ",nave.vida);
 					printf(" tchurururiri");
 					if(nave.vida == 0){
@@ -649,14 +651,13 @@ int main(int argc, char **argv){
 	ALLEGRO_BITMAP *botaoPlay = NULL;
 	ALLEGRO_BITMAP *botaoOptions = NULL;	
 	
-	ALLEGRO_BITMAP *bgImage = NULL;
-	ALLEGRO_BITMAP *mgImage = NULL;
-	ALLEGRO_BITMAP *fgImage = NULL;
-	
-	ALLEGRO_SAMPLE *shot = NULL;
+	//ALLEGRO_SAMPLE *shot = NULL;
 	ALLEGRO_SAMPLE *boom = NULL;
 	ALLEGRO_SAMPLE *song = NULL;
+	
+	ALLEGRO_SAMPLE *siren = NULL;
 	ALLEGRO_SAMPLE_INSTANCE *songInstance = NULL;
+	ALLEGRO_SAMPLE_INSTANCE *songInstance2 = NULL;
 	
 	
 	//----------------------- rotinas de inicializacao ---------------------------------------
@@ -791,9 +792,9 @@ int main(int argc, char **argv){
 	//incializa o decodificador de audio
     al_init_acodec_addon();
 
-	shot = al_load_sample("./Sound/Laser_Shootshot.ogg");
+	//shot = al_load_sample("./Sound/Laser_Shoot.ogg");
 	song = al_load_sample("./Sound/tema.ogg");
-	
+	siren = al_load_sample("Sound\\Siren.ogg");
 	/*sample = al_load_sample("Sound\\tema.ogg");
 	if(!sample){
 		fprintf(stderr, "Falha ao carregar som\n");
@@ -803,9 +804,12 @@ int main(int argc, char **argv){
    
 	al_reserve_samples(40);
 	songInstance = al_create_sample_instance(song);
+	songInstance2 = al_create_sample_instance(siren);
 	al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
+	al_set_sample_instance_playmode(songInstance2, ALLEGRO_PLAYMODE_LOOP);
 	
 	al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
+	al_attach_sample_instance_to_mixer(songInstance2, al_get_default_mixer());
 	/*
 	/* Loop the sample until the display closes. */
 	//al_play_sample(sample, 1.0, 0.0,1.0,ALLEGRO_PLAYMODE_LOOP,NULL);   
@@ -875,6 +879,7 @@ int main(int argc, char **argv){
 		if (menuPlay){
 		  // Desenha o Menu Principal
 		  al_play_sample_instance(songInstance);
+		  
 		  al_draw_bitmap(menu, 0, 0, 0);
 		  al_draw_bitmap_region(botaoPlay, 144, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
 		  al_draw_bitmap_region(botaoOptions, 0, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
@@ -1012,7 +1017,7 @@ int main(int argc, char **argv){
 			
 			if(colisaoMeteoro(meteoro,bloco,nave)==1){
 				
-
+				al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 				char texto_fim_1[20];
 				char texto_fim_2[20];
 				char texto_fim_3[20];
@@ -1050,6 +1055,8 @@ int main(int argc, char **argv){
 				desenhaChefao(chefao); 
 				printaChefeVida(size_32, &vidaChefe);
 				
+				al_play_sample_instance(songInstance2);
+				
 				desenhaTiroC(tiroc, NUM_TIROS); 
 				atualizaTiroC(tiroc, NUM_TIROS);		
 				
@@ -1060,6 +1067,7 @@ int main(int argc, char **argv){
 				
 				if(colisaoTiroC(tiroc,nave,bloco)==1){
 					printf("Falesceu!");
+					al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 				
 					char texto_fim_1[20];
 					char texto_fim_2[20];
@@ -1135,6 +1143,7 @@ int main(int argc, char **argv){
 				
 				if(colisaoChefao(chefao, nave, tiros, &vidaChefe)==1){
 				printf("Falesceu!");
+				al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 				//printf(" Vida do chefao: %d ", vidaChefe);
 
 				//printf(" Vida do chefao: %d ", &vidaChefe);
@@ -1203,7 +1212,7 @@ int main(int argc, char **argv){
 						nave.dir_x++;
 				break;	
 				case ALLEGRO_KEY_SPACE:
-					al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
+					//al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 					atira(tiros, NUM_TIROS, nave, inicio_tiro, segurando_tecla,ev.keyboard.keycode, segurando_tecla, tiro_avancado_duracao);
 						inicio_tiro = al_get_time();
 						segurando_tecla = true;	
