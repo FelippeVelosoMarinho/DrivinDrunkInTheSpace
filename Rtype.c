@@ -657,22 +657,22 @@ void InitPlanoFundo(Estrelas estrelas_pf[][NUM_ESTRELAS], int pf_tamanho, int e_
 				//estrelas_pf[i][j].ID = ESTRELA;
 				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W - 10);
 				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
-				estrelas_pf[i][j].velocidade = 8;
+				estrelas_pf[i][j].velocidade = 5;
 			}
 
 			else if(i == 1)
 			{
 				//estrelas_pf[i][j].ID = ESTRELA;
-				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W - 10);
-				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
+				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W - 80);
+				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 80);
 				estrelas_pf[i][j].velocidade = 3;
 			}
 
 			else if(i == 2)
 			{
 				//estrelas_pf[i][j].ID = ESTRELA;
-				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W  - 10);
-				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
+				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W  - 120);
+				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 120);
 				estrelas_pf[i][j].velocidade = 1;
 			}
 		}
@@ -1026,7 +1026,7 @@ int main(int argc, char **argv){
 				  al_draw_bitmap_region(botaoPlay, 0, 0, 144, 52, xBotaoPlay, yBotaoPlay, 0);
 				  al_draw_bitmap_region(botaoOptions, 144, 0, 144, 52, xBotaoOptions, yBotaoOptions, 0);
 				  continuar = true;
-				  playing = 0;
+				  //playing = 0; o erro de ficar assim ta aqui, eu ativei todos os outros e só comentei esse e voltou a funcionar
 				  break;				  
 				  
 				  case(ALLEGRO_KEY_ENTER):
@@ -1052,7 +1052,7 @@ int main(int argc, char **argv){
 					}else{	
 					noMenu = false;
 					printf("fiuk");
-					//playing=0;
+					playing=0;
 					//jogoInicia = 1;
                 }
 				  break;
@@ -1077,9 +1077,11 @@ int main(int argc, char **argv){
 			//al_play_sample_instance(songInstance);
 			
 			desenhaCenario();
+			if(chefe==0){
+				DesenhaPlanoFundo(estrelas_pf, NUM_PLANOS, NUM_ESTRELAS);
+				AtualizarPlanoFundo(estrelas_pf, NUM_PLANOS, NUM_ESTRELAS);			
+			}
 
-			DesenhaPlanoFundo(estrelas_pf, NUM_PLANOS, NUM_ESTRELAS);
-			AtualizarPlanoFundo(estrelas_pf, NUM_PLANOS, NUM_ESTRELAS);
 			
 			atualizaBloco(&bloco);
 			
@@ -1322,16 +1324,12 @@ int main(int argc, char **argv){
 					atira(tiros, NUM_TIROS, nave, inicio_tiro, segurando_tecla,ev.keyboard.keycode, segurando_tecla, tiro_avancado_duracao);
 						inicio_tiro = al_get_time();
 						segurando_tecla = true;	
-						if(segurando_tecla)
-							printf("shambles");
-						
+					
 						dispara = 0;
 					
 				break;				
 			}
-			
-			//imprime qual tecla foi
-			//printf("\ncodigo tecla: %d", ev.keyboard.keycode);
+
 		}
 		else if(ev.type == ALLEGRO_EVENT_KEY_UP) {
 			
@@ -1352,9 +1350,7 @@ int main(int argc, char **argv){
 				case ALLEGRO_KEY_SPACE:
 						segurando_tecla = false;	
 						//duracao_tiro = al_get_time() - inicio_tiro;
-						if(!segurando_tecla)
-							printf("shambles2");
-						
+
 						dispara = 1;
 						//tiro2(tiros, segurando_tecla, dispara);
 					
