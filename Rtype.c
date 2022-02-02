@@ -22,7 +22,7 @@ const int VELOCIDADE_NAVE = 3;
 
 const int NUM_TIROS = 1;
 const int NUM_METEORO = 6;
-const int NUM_ESTRELAS = 100;
+const int NUM_ESTRELAS = 20;
 const int NUM_PLANOS = 3;
 
 ALLEGRO_COLOR COR_CENARIO;
@@ -597,7 +597,8 @@ int colisaoTiroC(TiroC tiroc[], Nave nave, Bloco bloco){
 					printf("colisao nave tirozao");
 					nave.vida--;
 					
-					morte = al_load_sample("//Sound/morte.ogg");
+					morte = al_load_sample("Sound\\morte.ogg");
+					al_play_sample(morte, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 					//printf(" VIDA: %d ",nave.vida);
 					printf(" tchurururiri");
 					if(nave.vida == 0){
@@ -653,25 +654,25 @@ void InitPlanoFundo(Estrelas estrelas_pf[][NUM_ESTRELAS], int pf_tamanho, int e_
 		{
 			if(i == 0)
 			{
-				estrelas_pf[i][j].ID = ESTRELA;
-				estrelas_pf[i][j].x = 5 + rand() % (largura_t - 10);
-				estrelas_pf[i][j].y = 5 + rand() % (altura_t - 10);
+				//estrelas_pf[i][j].ID = ESTRELA;
+				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W - 10);
+				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
 				estrelas_pf[i][j].velocidade = 8;
 			}
 
 			else if(i == 1)
 			{
-				estrelas_pf[i][j].ID = ESTRELA;
-				estrelas_pf[i][j].x = 5 + rand() % (largura_t - 10);
-				estrelas_pf[i][j].y = 5 + rand() % (altura_t - 10);
+				//estrelas_pf[i][j].ID = ESTRELA;
+				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W - 10);
+				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
 				estrelas_pf[i][j].velocidade = 3;
 			}
 
 			else if(i == 2)
 			{
-				estrelas_pf[i][j].ID = ESTRELA;
-				estrelas_pf[i][j].x = 5 + rand() % (largura_t - 10);
-				estrelas_pf[i][j].y = 5 + rand() % (altura_t - 10);
+				//estrelas_pf[i][j].ID = ESTRELA;
+				estrelas_pf[i][j].x = 5 + rand() % (SCREEN_W  - 10);
+				estrelas_pf[i][j].y = 5 + rand() % (SCREEN_H - 10);
 				estrelas_pf[i][j].velocidade = 1;
 			}
 		}
@@ -688,7 +689,7 @@ void AtualizarPlanoFundo(Estrelas estrelas_pf[][NUM_ESTRELAS], int pf_tamanho, i
 				estrelas_pf[i][j].x -= estrelas_pf[i][j].velocidade;
 
 				if(estrelas_pf[i][j].x < 0)
-					estrelas_pf[i][j].x = largura_t;
+					estrelas_pf[i][j].x = SCREEN_W;
 			}
 
 			else if(i == 1)
@@ -696,7 +697,7 @@ void AtualizarPlanoFundo(Estrelas estrelas_pf[][NUM_ESTRELAS], int pf_tamanho, i
 				estrelas_pf[i][j].x -= estrelas_pf[i][j].velocidade;
 
 				if(estrelas_pf[i][j].x < 0)
-					estrelas_pf[i][j].x = largura_t;
+					estrelas_pf[i][j].x = SCREEN_W;
 			}
 
 			else if(i == 2)
@@ -704,7 +705,7 @@ void AtualizarPlanoFundo(Estrelas estrelas_pf[][NUM_ESTRELAS], int pf_tamanho, i
 				estrelas_pf[i][j].x -= estrelas_pf[i][j].velocidade;
 
 				if(estrelas_pf[i][j].x < 0)
-					estrelas_pf[i][j].x = largura_t;
+					estrelas_pf[i][j].x = SCREEN_W;
 			}
 		}
 	}
