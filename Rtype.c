@@ -247,28 +247,30 @@ void movimentaMeteoro(Meteoro meteoro[]){
 	}
 }
 
-void atira(Tiro tiro[], int tamanho ,Nave nave, float tiro_duracao, bool tiro_avancado_duracao, int tecla, float inicio_tiro, bool segurando_tecla){
-        switch(tecla) {
-			//se a tecla for o espaço
-			case ALLEGRO_KEY_SPACE:
-                inicio_tiro = al_get_time();
-                segurando_tecla = true;
-			break;
+void atira(Tiro tiro[], int tamanho ,Nave nave, double tiro_duracao, bool tiro_avancado_duracao, int tecla, float inicio_tiro, bool segurando_tecla){
 
-		}
 	for(int i = 0; i < tamanho; i++){
-		/*if(!tiro[i].vida){
-			if(tiro_duracao<tiro_avancado_duracao){
-				tiro[i].vida = true;
-				tiro[i].size++;
-			}		
-		}*/
 
 		if(!tiro[i].vida){
-			tiro[i].x = nave.x;
-			tiro[i].y = nave.y;
-			tiro[i].vida = true;
-		
+			
+			// se o tempo que o espaço foi segurado foi maior ou igual que 1s
+			if(tiro_duracao >= 1.0)
+			{
+				// tiro simples
+				tiro[i].x = nave.x;
+				tiro[i].y = nave.y;
+				tiro[i].vida = true;
+				tiro[i].size = 20;
+			}
+			else
+			{
+				// tiro avancado]
+				tiro[i].x = nave.x;
+				tiro[i].y = nave.y;
+				tiro[i].vida = true;
+				tiro[i].size = 4;
+			}
+
 			shot = al_load_sample("Sound\\Laser_Shoot.ogg");
 			al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
 
@@ -358,7 +360,6 @@ void colisaoMeteoroMeteoro(Meteoro meteoro[]){
 						meteoro[i].y - meteoro[i].size < meteoro[j].y + meteoro[j].size){					
 							meteoro[i].vida = false;
 							meteoro[j].vida = false;
-							printf("churinsques");
 					}
 				}
 			}
@@ -964,7 +965,7 @@ int main(int argc, char **argv){
 	
 	bool segurando_tecla = true;
 	float tiro_avancado_duracao = 1.00;
-	float inicio_tiro = 0;	
+	double inicio_tiro = 0, duracao_tiro = 0;	
 	
 	bool chefe = 0;
 	int dispara =0;
@@ -1293,9 +1294,11 @@ int main(int argc, char **argv){
 			//atualiza a tela (quando houver algo para mostrar)
 			al_flip_display();
 
+			/*
 			if(al_get_timer_count(timer)%(int)FPS == 0){
 				printf("\n%d segundos se passaram...", (int)(al_get_timer_count(timer)/FPS));
 			}
+			*/
 				
 		}
 		//se o tipo de evento for o fechamento da tela (clique no x da janela)
@@ -1320,11 +1323,9 @@ int main(int argc, char **argv){
 						nave.dir_x++;
 				break;	
 				case ALLEGRO_KEY_SPACE:
-					//al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);
-					atira(tiros, NUM_TIROS, nave, inicio_tiro, segurando_tecla,ev.keyboard.keycode, segurando_tecla, tiro_avancado_duracao);
+					//al_play_sample(shot, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);	
 						inicio_tiro = al_get_time();
 						segurando_tecla = true;	
-					
 						dispara = 0;
 					
 				break;				
@@ -1349,11 +1350,10 @@ int main(int argc, char **argv){
 				break;	
 				case ALLEGRO_KEY_SPACE:
 						segurando_tecla = false;	
-						//duracao_tiro = al_get_time() - inicio_tiro;
-
+						duracao_tiro = al_get_time() - inicio_tiro;
 						dispara = 1;
-						//tiro2(tiros, segurando_tecla, dispara);
-					
+						atira(tiros, NUM_TIROS, nave, duracao_tiro, segurando_tecla,ev.keyboard.keycode, segurando_tecla, tiro_avancado_duracao);
+											
 				break;					
 			}
 		}
