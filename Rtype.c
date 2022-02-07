@@ -350,40 +350,32 @@ void colisaoTiro(Tiro tiro[], int tTam, Meteoro meteoro[], int *escore){
 }
 
 void colisaoMeteoroMeteoro(Meteoro meteoro[]){
-	for(int i = 0; i < 1; i++){
-		if(meteoro[i].vida /*&& meteoro[i].x<0*/){
-			for(int j =0; j < 1; j++){
-				if(meteoro[j].vida /*&& meteoro[j].x<0*/){
-					if(meteoro[i].x + meteoro[i].size > meteoro[j].x - meteoro[j].size &&
-						meteoro[i].x - meteoro[i].size < meteoro[j].x + meteoro[j].size &&
-						meteoro[i].y + meteoro[i].size > meteoro[j].y - meteoro[j].size &&
-						meteoro[i].y - meteoro[i].size < meteoro[j].y + meteoro[j].size){					
+	// compara todos os metoros com vida ativada com todos os outros metoros com vida ativada e ve se houve alguma colisão entre eles
+	for(int i = 0; i < NUM_METEORO; i++)
+	{
+		if(meteoro[i].vida)
+		{
+			for(int j = 0; j < NUM_METEORO; j++)
+			{
+				if(meteoro[j].vida)
+				{
+					if(i != j)
+					{
+						if(meteoro[i].x+meteoro[i].size > meteoro[j].x-meteoro[j].size &&
+							meteoro[i].x-meteoro[i].size < meteoro[j].x+meteoro[j].size &&
+							meteoro[i].y+meteoro[i].size > meteoro[j].y-meteoro[j].size &&
+							meteoro[i].y-meteoro[i].size < meteoro[j].y+meteoro[j].size)
+							{
 							meteoro[i].vida = false;
 							meteoro[j].vida = false;
+						}
 					}
 				}
 			}
 		}
 	}
-}/*
-void colisaoMeteoroMeteoro(Meteoro meteoro[]){
-	for(int i = 0; i < NUM_METEORO; i++){
-		if(meteoro[i].vida&& meteoro[i].x>SCREEN_W){
-		
-				
-					if(meteoro[i].x + meteoro[i].size> (meteoro[i].x - meteoro[i].size) &&
-						meteoro[i].x - meteoro[i].size < (meteoro[i].x + meteoro[i].size) &&
-						meteoro[i].y + meteoro[i].size> (meteoro[i].y - meteoro[i].size) &&
-						meteoro[i].y - meteoro[i].size< (meteoro[i].y + meteoro[i].size)){					
-							meteoro[i].vida = false;
-							printf("churinsques");
-					}
-				
-			
-		}
-	}
-}*/
 
+}
 
 int colisaoMeteoro(Meteoro meteoro[], Bloco bloco, Nave nave){
 	
