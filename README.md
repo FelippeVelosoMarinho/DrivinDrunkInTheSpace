@@ -12,6 +12,7 @@ Neste jogo você é um viajante espacial que está no ano de 2622 e após a derr
 	O Boss irá aparecer após um minuto. “Aquilo é realmente um polvo mesmo ou você bebeu um pouco demais??? Será que os blocos são ônibus??? Os meteoros são carros??  Os jetskis são motos?? Os banhistas são pedestres???... Eéé enfim, mistérios… “
 
 ![DDS_1](https://user-images.githubusercontent.com/60450622/154188368-33ad1f39-26ff-4100-bff9-ac979295137d.PNG)
+
 *Título do Jogo
 
 ## 3 - Instruções
@@ -22,19 +23,25 @@ Em Driving Drunk in the Space seu objetivo é sobreviver e derrotar o chefe. Log
 	Ao derrotar o chefe é acrescentado 5000 pontos no score e exibido sua pontuação final por 3 segundos, igualmente se o jogador for morto. Se for record, é exibido um texto com “Novo Recorde!”.
 
 ![DDS_2](https://user-images.githubusercontent.com/60450622/154188626-e75fa1b2-9781-47da-bf3e-f0ac1aaa6023.PNG)
+
 *Tela de Menu
 
 ![DDS_3](https://user-images.githubusercontent.com/60450622/154188677-bb240818-0fb8-411c-8906-da5491f78a5f.PNG)
+
 *Tela de Tutorial
 
 ### 3.2 - Telas do Jogo
 
 ![DDS_4](https://user-images.githubusercontent.com/60450622/154188725-f067b8ab-aaa3-42ee-94d3-7409396e457d.PNG)
+
 *Tela do Jogo em ação
 
 ![DDS_5](https://user-images.githubusercontent.com/60450622/154188779-de3a785a-1a15-4473-a335-b1ba0e28f184.PNG)
+
 *Tela do Jogo - Batalha com o Chefe
+
 ![DDS_6](https://user-images.githubusercontent.com/60450622/154188817-3b0e2d7c-c786-4b2d-b064-da88e801204c.PNG)
+
 *Tela do Jogo - Exibição da Pontuação
 3.3 - Controles
 	
