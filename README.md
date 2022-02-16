@@ -38,12 +38,12 @@ Em Driving Drunk in the Space seu objetivo é sobreviver e derrotar o chefe. Log
 *Tela do Jogo - Exibição da Pontuação
 3.3 - Controles
 	
-	No menu e tutorial:
-W, A, S, D ou  SETA CIMA, SETA ESQUERDA, SETA DIREITA, SETA BAIXO - Seleciona as caixas de seleção do menu.
+No menu e tutorial:
+	W, A, S, D ou  SETA CIMA, SETA ESQUERDA, SETA DIREITA, SETA BAIXO - Seleciona as caixas de seleção do menu.
 		P - Inicia o jogo.
 
-	Em jogo:
-		W, A, S, D - Movimenta a Nave.
+Em jogo:
+	W, A, S, D - Movimenta a Nave.
 Clicando:
 Espaço -  Atira - Tiro básico.
 
